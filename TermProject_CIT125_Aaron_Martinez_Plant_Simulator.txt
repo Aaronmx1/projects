@@ -1,0 +1,501 @@
+//Semester Project
+//CIT125 By Aaron Martinez
+
+//pre-processing directives
+#include <iostream>
+#include <string>
+#include <fstream> //for sequential access file
+#include <cstdlib> //random function
+#include <cmath> //used to reduce value of random number through square root function
+using namespace std;
+
+//function prototypes
+void displayOptions(); //displays plant choices to user
+void interactionOptions(); //displays user interactions with plant
+void saveProgress(int dayCurrent, int action); //saves plant selections to file
+void plantInteractions(int dayCurrent, int interactionAmount, int dayCycles); //captures plant interactions
+int decisionOne(); //interaction choice 1
+int decisionTwo(); //interaction choice 2
+int decisionThree(); //interaction choice 3
+int decisionFour(); //interaction choice 4
+int bugInfestation(string nameOfPlant); //bug infestation generator
+void gameOver(int lossOne, int lossTwo, int lossThree, int lossFour);//tracks loss of game
+void gameWin(int finalDay, int decisionChoiceOne, int decisionChoiceTwo, int decisionChoiceThree, int decisionChoiceFour);//tracks winning game
+int getChoice (int capturedChoice);//requires user to input decision from option list
+void gameInstructions();//instructions for game
+
+
+int main()
+{
+    //declare and initialize variables
+    string plant = ""; //stores plant name
+    int plantChoice = 0; //stores selected plant
+    int plantAction = 0; //stores interactions with plant
+    int totalDays = 5;//days of interaction with plant
+    int interactionsWithPlant = 2;//interactions per day with plant
+    int choiceOne = 2;
+    int choiceTwo = 2;
+    int choiceThree = 0;
+    int choiceFour = 5;
+    int bugAttack = 0;
+
+    //function main body
+    gameInstructions();//game beginning instructions
+    displayOptions(); //display plant options
+
+    do { //matches user plant selection to plant cases
+    cin >> plantChoice;//stores user selection
+    switch (plantChoice) //users plant choice is assigned here; captures incorrect user selection and asks user to choose again
+    {
+        case 1:
+        {
+            plant = "Strawberry plant";
+            cout << endl << "You've selected the " << plant << endl;
+            choiceOne += 2; //add +2 points to Water option.
+            break;
+        }
+        case 2:
+        {
+            plant = "Blueberry plant";
+            cout << endl << "You've selected the " << plant << endl;
+            choiceTwo += 2; //add +2 points to Fertilizer option.
+            break;
+        }
+        case 3:
+        {
+            plant = "Mint plant";
+            cout << endl << "You've selected the " << plant << endl;
+            choiceThree += 2; //add +2 points to Rest option.
+            break;
+        }        
+        default:
+        {
+            cout << "Incorrect plant choice, please make another selection." << endl << endl;
+            displayOptions();
+        }//end default
+    }//end switch  
+    }//end do
+    while (plantChoice > 3);//plant selected while within choices 1-3
+    
+    //to clear existing file on local drive so stats from prior game are erased
+    ofstream outFile; //creates data file called "outFile" from ofstream package
+    outFile.open("plantChoices.txt", ios::out);
+
+    for(int currentDay = 0; currentDay <= totalDays; currentDay++) //days program will run for
+    {
+        gameOver(choiceOne, choiceTwo, choiceThree, choiceFour);//triggers if certain thresholds are met with options.
+
+        if (choiceOne <= 0)
+        {
+            cout << " ____________" << endl;
+            cout << "| Game Over! |" << endl;
+            cout << "|____________|" << endl;
+            return 0;
+        }
+        else if (choiceTwo <= 0)
+        {
+            cout << " ____________" << endl;
+            cout << "| Game Over! |" << endl;
+            cout << "|____________|" << endl;
+            return 0;
+        }
+        else if (choiceThree < -10)
+        {
+            cout << " ____________" << endl;
+            cout << "| Game Over! |" << endl;
+            cout << "|____________|" << endl;
+            return 0;
+        }
+        else if (choiceFour <= 0)
+        {
+            cout << " ____________" << endl;
+            cout << "| Game Over! |" << endl;
+            cout << "|____________|" << endl;
+            return 0;
+        } 
+
+        plantInteractions(currentDay, interactionsWithPlant, totalDays);
+
+        if (currentDay == 0) //completion of day one
+        {
+            choiceThree += bugInfestation(plant);//random bug infestation trigger function to start of each day
+            cout << endl << endl << "Day " << currentDay + 1 << " is complete." << endl << endl;
+            choiceOne += decisionOne();
+            cout << "   Water levels: " << choiceOne << endl << endl;
+            choiceTwo += decisionTwo();
+            cout << "   Plant fertlizer levels: " << choiceTwo << endl << endl;
+            choiceThree -= decisionThree();
+            cout << "   Bugs infesting: " << choiceThree << endl << endl;
+            choiceFour += decisionFour();
+            cout << "   Energy level: " << choiceFour << endl << endl;
+        }
+        else if(currentDay == 1)
+        {
+            //decreases variables by 1. Meant to represent the consumption of water, Fertilizer, and Rest throughout the day
+            choiceOne -= 1;
+            choiceTwo -= 1;
+            choiceThree -= 0;
+            choiceFour -= 1;
+
+            choiceThree += bugInfestation(plant);
+            cout << endl << endl << "Day " << currentDay + 1 << " is complete." << endl << endl;
+            choiceOne += decisionOne();
+            cout << "   Water levels: " << choiceOne << endl << endl;
+            choiceTwo += decisionTwo();
+            cout << "   Plant fertlizer levels: " << choiceTwo << endl << endl;
+            choiceThree += decisionThree();
+            cout << "   Bugs infesting: " << choiceThree << endl << endl;
+            choiceFour += decisionFour();
+            cout << "   Energy level: " << choiceFour << endl << endl;
+        }
+        else if(currentDay == 2)
+        {
+            //decreases variables by 1. Meant to represent the consumption of water, Fertilizer, and Rest throughout the day
+            choiceOne -= 1;
+            choiceTwo -= 2;
+            choiceThree -= choiceThree;
+            choiceFour -= 2;
+
+            choiceThree += bugInfestation(plant);
+            cout << endl << endl << "Day " << currentDay + 1 << " is complete." << endl << endl;
+            choiceOne += decisionOne();
+            cout << "   Water levels: " << choiceOne << endl << endl;
+            choiceTwo += decisionTwo();
+            cout << "   Plant fertlizer levels: " << choiceTwo << endl << endl;
+            choiceThree -= decisionThree();
+            cout << "   Bugs infesting: " << choiceThree << endl << endl;
+            choiceFour += decisionFour();
+            cout << "   Energy level: " << choiceFour << endl << endl;
+        }
+        else if(currentDay == 3)
+        {
+            //decreases variables by 1. Meant to represent the consumption of water, Fertilizer, and Rest throughout the day
+            choiceOne -= 2;
+            choiceTwo -= 1;
+            choiceThree -= 2;
+            choiceFour -= choiceFour;
+
+            choiceThree += bugInfestation(plant);
+            cout << endl << endl << "Day " << currentDay + 1 << " is complete." << endl << endl;
+            choiceOne += decisionOne();
+            cout << "   Water levels: " << choiceOne << endl << endl;
+            choiceTwo += decisionTwo();
+            cout << "   Plant fertlizer levels: " << choiceTwo << endl << endl;
+            choiceThree -= decisionThree();
+            cout << "   Bugs infesting: " << choiceThree << endl << endl;
+            choiceFour += decisionFour();
+            cout << "   Energy level: " << choiceFour << endl << endl;
+        }
+        else if(currentDay == 4)
+        {
+            //decreases variables by 1. Meant to represent the consumption of water, Fertilizer, and Rest throughout the day
+            choiceOne -= 2;
+            choiceTwo -= 2;
+            choiceThree -= 1;
+            choiceFour -= 1;
+
+            choiceThree += bugInfestation(plant);
+
+            cout << endl << endl << "Day " << currentDay + 1 << " is complete." << endl << endl;
+            choiceOne += decisionOne();
+            cout << "   Water levels: " << choiceOne << endl << endl;
+            choiceTwo += decisionTwo();
+            cout << "   Plant fertlizer levels: " << choiceTwo << endl << endl;
+            choiceThree -= decisionThree();
+            cout << "   Bugs infesting: " << choiceThree << endl << endl;
+            choiceFour += decisionFour();
+            cout << "   Energy level: " << choiceFour << endl << endl;
+        }
+        else if(currentDay >= 5)
+        {
+            gameWin(currentDay, choiceOne, choiceTwo, choiceThree, choiceFour);
+            return 0;
+        }
+        else
+            cout << "Too many days passed." << endl;
+        //end if
+    }//end for
+    return 0;
+}//end main
+
+//****Function definitions****
+void displayOptions() //displays plant choice options
+{
+    //plant options
+    cout << "Please choose a plant from options below." << endl << endl;
+    cout << "_____ Plant Choices _______" << endl;
+    cout << "1) Strawberry plant" << endl;
+    cout << "2) Blueberry plant" << endl;
+    cout << "3) Mint plant" << endl << endl;
+}//end of displayOptions function
+
+void interactionOptions() //displays interactions available with plant
+{
+    cout << "How would you like to interact with the plant?" << endl << endl;
+    cout << "***** Interactions with plant *****" << endl;
+    cout << "| 1)      Water plant      |" << endl;
+    cout << "| 2)    Fertilize plant    |" << endl;
+    cout << "| 3)   Spray bug killer    |" << endl;
+    cout << "| 4)         Rest          |" << endl << endl;
+}
+
+void saveProgress(int dayCurrent, int action) //saves progress of plant interactions from user
+{
+    //create file object and open the file
+    ofstream outFile; //creates data file called "outFile" from ofstream package
+    outFile.open("plantChoices.txt", ios::app);
+
+    //determine whether the file was opened
+    if (outFile.is_open())
+    {
+        outFile << dayCurrent << '#' << action << endl;
+        outFile << 0 << '#' << 0 << endl;//is a work-around. inFile adds 1 extra line when reading file. Extra line causes last user input to be duplicated. Current line statement adds 0 values and eliminates counting error since 0 has no effect on decision comparison math
+        outFile.close();
+    }//end if
+}//end saveProgress function
+
+void plantInteractions(int dayCurrent, int interactionAmount, int dayCycles) //captures plant interactions inputted by user
+{
+    for (int x = 0; x < interactionAmount; x++ )//allows 3 plant interactions to take place per day
+    {
+        //declare and initialize variables
+        int plantAction = 0;
+        int plantChoiceTemporary = 0;
+        cout << endl << "[------->  Day: " << dayCurrent + 1 << "  <-------]" << endl << endl;
+
+        cout << "You have " << 2 - x << " interaction(s) remaining today." << endl << endl;
+        interactionOptions();//displays interactions with plant options
+        cin >> plantChoiceTemporary;
+        //cout << "Plant Choice Temporary: " << plantChoiceTemporary << endl;
+        plantAction += getChoice(plantChoiceTemporary);
+        saveProgress(dayCurrent, plantAction);//stores user choices in sequential access file for later use
+        
+    }//end for
+}//end plantInteractions function
+
+int decisionOne() //reads data from sequential access file and captures choice # 1 through boolean value addition [variable == 1]
+{
+    //declare and initialize array variables
+    int choiceOne = 0;
+    int sumChoiceOne = 0;
+
+    ifstream inFile;//creates output file variable
+    inFile.open("plantChoices.txt", ios::in);//acts upon file variable stream by opening file "".txt and ::in inputting data
+
+    if (inFile.is_open())
+    {
+        while (!inFile.eof())
+        {
+            inFile.ignore();
+            inFile.ignore();    
+            inFile >> choiceOne;
+            inFile.ignore();
+            sumChoiceOne += choiceOne == 1;
+            //cout << "Sum choice 1: " << sumChoiceOne << endl;
+            
+        }//end while
+        inFile.close();
+    }
+    else
+        cout << "Can't open plantChoices.txt file." << endl;
+    //end if function
+    //cout << "After while loop choice 1: " << sumChoiceOne << endl;
+
+    return sumChoiceOne;
+}//end decisionOne function
+
+int decisionTwo() ////reads data from sequential access file and captures choice # 2 through boolean value addition [variable == 1]
+{
+    //declare and initialize array variables
+    int choiceTwo = 0;
+    int sumChoiceTwo = 0;
+
+    ifstream inFile;
+    inFile.open("plantChoices.txt", ios::in);
+
+    if (inFile.is_open())
+    {
+        while (!inFile.eof())
+        {
+            inFile.ignore();
+            inFile.ignore();    
+            inFile >> choiceTwo;
+            inFile.ignore();
+            sumChoiceTwo += choiceTwo == 2;
+            //cout << "Sum choice 2: " << sumChoiceTwo << endl;
+            
+        }//end while
+        inFile.close();
+    }
+    else
+        cout << "Can't open plantChoices.txt file." << endl;
+    //end if function
+    //cout << "After while loop choice 2: " << sumChoiceTwo << endl;
+
+    return sumChoiceTwo;
+}//end decisionOne function
+
+int decisionThree() //reads data from sequential access file and captures choice # 2 through boolean value addition [variable == 1]
+{
+    //declare and initialize array variables
+    int choiceThree = 0;
+    int sumChoiceThree = 0;
+
+    ifstream inFile;
+    inFile.open("plantChoices.txt", ios::in);
+
+    if (inFile.is_open())
+    {
+        while (!inFile.eof())
+        {
+            inFile.ignore();
+            inFile.ignore();    
+            inFile >> choiceThree;
+            inFile.ignore();
+            sumChoiceThree += choiceThree == 3;
+            //cout << "Sum choice 3: " << sumChoiceThree << endl;
+            
+        }//end while
+        inFile.close();
+    }
+    else
+        cout << "Can't open plantChoices.txt file." << endl;
+    //end if function
+    //cout << "After while loop choice 3: " << sumChoiceThree << endl;
+
+    if (choiceThree <= 0)
+    {
+        return choiceThree = 0;
+    }//end if
+
+    return sumChoiceThree;
+}//end decisionOne function
+
+int decisionFour() //reads data from sequential access file and captures choice # 2 through boolean value addition [variable == 1]
+{
+    //declare and initialize array variables
+    int choiceFour = 0;
+    int sumChoiceFour = 0;
+
+    ifstream inFile;
+    inFile.open("plantChoices.txt", ios::in);
+
+    if (inFile.is_open())
+    {
+        while (!inFile.eof())
+        {
+            inFile.ignore();
+            inFile.ignore();    
+            inFile >> choiceFour;
+            inFile.ignore();
+            sumChoiceFour += choiceFour == 4;
+            //cout << "Sum choice 4: " << sumChoiceFour << endl;
+            
+        }//end while
+        inFile.close();
+    }
+    else
+        cout << "Can't open plantChoices.txt file." << endl;
+    //end if function
+    //cout << "After while loop choice 4: " << sumChoiceFour << endl;
+
+    return sumChoiceFour;
+}//end decisionOne function
+
+int bugInfestation(string nameOfPlant)
+{
+    //declare and initialize variables
+    int randomNumber = 0;
+    int randomCounter = 0;
+
+    randomNumber = rand();
+    randomCounter = sqrt(sqrt(sqrt(randomNumber)));
+    if(randomCounter > 12)
+    {
+        cout << " ___________________________________________________________________________" << endl;
+        cout << " Bugs are feeding on your " << nameOfPlant << "! Use Bug spray to save your plant! "  << endl;
+        cout << " ___________________________________________________________________________" << endl;
+        return -2;
+    }
+    cout << "This is the random number: " << randomCounter << endl;
+    return 0;
+}//end bug infestation function
+
+void gameOver(int lossOne, int lossTwo, int lossThree, int lossFour)
+{
+    if (lossOne <= 0)
+    {
+        cout << " ________________________________________________________" << endl;
+        cout << "|Your plant gets thirsty like you, try watering it next! |" << endl;
+        cout << "|________________________________________________________|" << endl << endl;
+    }
+    else if (lossTwo <= 0)
+    {
+        cout << " _______________________________________________________________" << endl;
+        cout << "|You may not eat, but this plant does. Try fertlizer next time! |" << endl;
+        cout << "|_______________________________________________________________|" << endl << endl;
+    }
+    else if (lossThree < -10)
+    {
+        cout << " _____________________________________________________________________________" << endl;
+        cout << "|Your plants were infested with bugs too long, try using bug spray next time!|" << endl;
+        cout << "|____________________________________________________________________________|" << endl << endl;
+    }
+    else if (lossFour <= 0)
+    {
+        cout << " _________________________________________________________" << endl;
+        cout << "|Gardening is a passive activity, take a break next time! |" << endl;
+        cout << "|_________________________________________________________|" << endl << endl;
+    }
+}//end gameOver function
+
+void gameWin(int finalDay, int decisionChoiceOne, int decisionChoiceTwo, int decisionChoiceThree, int decisionChoiceFour)
+{
+    if (finalDay >= 5)
+    {
+        cout << " _____________________________________________________" << endl;
+        cout << "|Congratulations on winning, now go buy a real plant! |" << endl;
+        cout << "|_____________________________________________________|" << endl << endl;
+
+        cout << " ___________________________" << endl;
+        cout << "|   Plant Statistics:       " << endl;
+        cout << "|" << " Water Plant:       " << decisionChoiceOne  << endl;
+        cout << "|" << " Fertlize Plant:    " << decisionChoiceTwo  << endl;
+        cout << "|" << " Spray bug killer:  " << decisionChoiceThree << endl;
+        cout << "|" << " Rest:              " << decisionChoiceFour << endl;
+        cout << "|__________________________" << endl;
+
+    }//end if
+}//end gameWin function
+
+int getChoice (int capturedChoice)//requires new input from user if options provided are not selected.
+{
+    //declare and initialize variables
+    int decision = 0;
+
+    while (capturedChoice >= 5)
+    {
+        cout << "Invalid choice, please select again. " << endl;
+        interactionOptions();
+        cin >> decision;
+        
+        if(decision <= 4)
+            return decision;
+    }
+    return decision;
+}//end getClose function
+
+void gameInstructions()
+{
+    cout << "___________________________________________________________________________________________________________________" << endl;
+    cout << endl << endl << "Welcome to Plant Simulator!" << endl;
+    cout << "You are tasked with keeping your plant alive until the end of Day 6." << endl << endl;
+    cout << "Rules for the game:" << endl << endl;
+    cout << "There are 3 plants to choose from, each plant starts with a bonus, for Water, Fertilizer, or Energy." << endl; 
+    cout << "Water, Fertilizer, and Energy levels must never drop to 0 or the plant will die." << endl;
+    cout << "Bugs may occassionally invade your plants, use bug spray to kill bugs." << endl;
+    cout << "Each day has different levels of what your plant consumes so keep an eye on stats posted at the end of each day." << endl;
+    cout << "Every day you are allowed 2 selections to be made.  The choices are Water, Fertilizer, Bug spray, and Resting." << endl;
+    cout << "There are 6 days within the cycle, which comes out to 12 decisions throughout the simulation." << endl;
+    cout << "___________________________________________________________________________________________________________________" << endl << endl << endl;
+}//end of gameInstructions function
